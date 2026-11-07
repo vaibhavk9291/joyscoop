@@ -1,0 +1,50 @@
+name: joyscoop
+description: "Joyscoop - Daily sales counter for softy and cold coffee shop"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.6.1
+  supabase_flutter: ^2.8.4
+  google_fonts: ^6.2.1
+  intl: ^0.20.2
+  fl_chart: ^0.70.2
+  share_plus: ^10.1.4
+  shared_preferences: ^2.5.3
+  connectivity_plus: ^6.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.4
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/branding/logo.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFE3EA"
+  adaptive_icon_foreground: "assets/branding/logo.png"
+
+flutter_native_splash:
+  color: "#FFF1F4"
+  image: "assets/branding/logo.png"
+  android_12:
+    image: "assets/branding/logo.png"
+    icon_background_color: "#FFE3EA"
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/branding/
+    - assets/products/
