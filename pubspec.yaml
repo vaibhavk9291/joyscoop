@@ -35,10 +35,11 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/branding/logo.png"
+  image_path: "assets/branding/JoyScoop Soft Serve Happiness-1024x1024.png"
   min_sdk_android: 21
-  adaptive_icon_background: "#FFE3EA"
-  adaptive_icon_foreground: "assets/branding/logo.png"
+  remove_alpha_ios: true
+  adaptive_icon_background: "#FBECDC"
+  adaptive_icon_foreground: "assets/branding/JoyScoop Soft Serve Happiness-1024x1024.png"
 
 flutter_native_splash:
   color: "#FFF1F4"
