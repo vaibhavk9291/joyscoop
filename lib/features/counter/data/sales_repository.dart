@@ -23,12 +23,42 @@ class SalesRepository {
           .eq('is_active', true)
           .order('sort_order', ascending: true);
 
-      return (response as List)
+      final productsList = (response as List)
           .map((item) => Product.fromJson(item as Map<String, dynamic>))
           .toList();
+
+      if (productsList.isEmpty) {
+        return Product.defaultProducts();
+      }
+
+      // Ensure Softy price is updated to 25 in memory and synced to Supabase
+      final updatedList = productsList.map((p) {
+        if (p.name.toLowerCase() == 'softy' && p.price != 25) {
+          _updateSoftyPriceInDb();
+          return Product(
+            id: p.id,
+            name: p.name,
+            price: 25,
+            sortOrder: p.sortOrder,
+            isActive: p.isActive,
+          );
+        }
+        return p;
+      }).toList();
+
+      return updatedList;
     } catch (e) {
       debugPrint('Error fetching products from Supabase: $e');
       return Product.defaultProducts();
+    }
+  }
+
+  /// Attempts to update the Softy price in Supabase DB to 25
+  Future<void> _updateSoftyPriceInDb() async {
+    try {
+      await client?.from('products').update({'price': 25}).eq('name', 'Softy');
+    } catch (e) {
+      debugPrint('Could not update Softy price in Supabase: $e');
     }
   }
 

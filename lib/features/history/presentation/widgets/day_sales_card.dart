@@ -11,10 +11,12 @@ import 'summary_bottom_sheet.dart';
 /// Single day sales summary card in History list
 class DaySalesCard extends StatelessWidget {
   final HistoryDayItem dayItem;
+  final bool isMasked;
 
   const DaySalesCard({
     super.key,
     required this.dayItem,
+    this.isMasked = false,
   });
 
   @override
@@ -26,7 +28,7 @@ class DaySalesCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        SummaryBottomSheet.show(context, dayItem);
+        SummaryBottomSheet.show(context, dayItem, isMasked: isMasked);
       },
       child: Container(
         decoration: BoxDecoration(
@@ -94,7 +96,9 @@ class DaySalesCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${dayItem.totalUnits} items sold',
+                    isMasked
+                        ? '•••• items sold'
+                        : '${dayItem.totalUnits} items sold',
                     style: AppTextStyles.caption,
                   ),
                 ],
@@ -107,7 +111,9 @@ class DaySalesCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  CurrencyFormatter.formatInt(dayItem.totalRevenue),
+                  isMasked
+                      ? '₹ ••••••'
+                      : CurrencyFormatter.formatInt(dayItem.totalRevenue),
                   style: AppTextStyles.cardTitle.copyWith(
                     fontWeight: FontWeight.w800,
                   ),

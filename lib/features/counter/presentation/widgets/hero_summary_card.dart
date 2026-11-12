@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_gradients.dart';
 import '../../../../core/theme/app_shadows.dart';
@@ -6,14 +7,19 @@ import '../../../../core/theme/app_text_styles.dart';
 import 'animated_count_text.dart';
 
 /// Hero summary card (full-width card, radius 28, pink gradient, white text, decorative circle)
+/// Includes bank-style privacy toggle ("i" / eye icon) to hide/unhide sales and quantities.
 class HeroSummaryCard extends StatelessWidget {
   final int totalRevenue;
   final int totalUnits;
+  final bool isMasked;
+  final VoidCallback? onTogglePrivacy;
 
   const HeroSummaryCard({
     super.key,
     required this.totalRevenue,
     required this.totalUnits,
+    this.isMasked = false,
+    this.onTogglePrivacy,
   });
 
   @override
@@ -64,30 +70,93 @@ class HeroSummaryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // "Today's Sales" caption
-                Text(
-                  "Today's Sales",
-                  style: AppTextStyles.caption.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
+                // Top Row: "Today's Sales" caption and Bank-style Privacy "i" / Eye Toggle
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Today's Sales",
+                      style: AppTextStyles.caption.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    if (onTogglePrivacy != null)
+                      InkWell(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          onTogglePrivacy!();
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.35),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isMasked
+                                    ? Icons.visibility_off_rounded
+                                    : Icons.visibility_rounded,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                isMasked ? 'Hidden' : 'Visible',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: AppDimensions.space8),
 
-                // Revenue in displayPrice (animated count-up 300ms)
-                AnimatedRevenueText(
-                  targetValue: totalRevenue,
-                  style: AppTextStyles.displayPrice,
+                // Revenue in displayPrice (masked if private, else animated count-up)
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: isMasked
+                      ? Text(
+                          '₹ • • • • • •',
+                          key: const ValueKey('masked_revenue'),
+                          style: AppTextStyles.displayPrice,
+                        )
+                      : AnimatedRevenueText(
+                          key: ValueKey<int>(totalRevenue),
+                          targetValue: totalRevenue,
+                          style: AppTextStyles.displayPrice,
+                        ),
                 ),
                 const SizedBox(height: AppDimensions.space4),
 
-                // Second line: "N items sold"
+                // Second line: "N items sold" (masked if private)
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
                   child: Text(
-                    '$totalUnits ${totalUnits == 1 ? "item" : "items"} sold',
-                    key: ValueKey<int>(totalUnits),
+                    isMasked
+                        ? '•••• items sold'
+                        : '$totalUnits ${totalUnits == 1 ? "item" : "items"} sold',
+                    key: ValueKey<String>(
+                      isMasked ? 'masked_units' : '$totalUnits',
+                    ),
                     style: AppTextStyles.body.copyWith(
                       color: Colors.white.withValues(alpha: 0.92),
                       fontWeight: FontWeight.w500,
@@ -102,4 +171,3 @@ class HeroSummaryCard extends StatelessWidget {
     );
   }
 }
-

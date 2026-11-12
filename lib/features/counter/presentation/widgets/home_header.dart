@@ -13,6 +13,7 @@ class HomeHeader extends StatelessWidget {
   final int pendingCount;
   final VoidCallback onLogout;
   final VoidCallback? onSyncTap;
+  final VoidCallback? onPrinterTap;
 
   const HomeHeader({
     super.key,
@@ -21,6 +22,7 @@ class HomeHeader extends StatelessWidget {
     this.pendingCount = 0,
     required this.onLogout,
     this.onSyncTap,
+    this.onPrinterTap,
   });
 
   @override
@@ -83,6 +85,16 @@ class HomeHeader extends StatelessWidget {
         ),
 
         const SizedBox(width: AppDimensions.space8),
+
+        // Printer Settings Button
+        if (onPrinterTap != null) ...[
+          CircularIconButton(
+            icon: Icons.print_outlined,
+            tooltip: 'Printer settings',
+            onTap: onPrinterTap!,
+          ),
+          const SizedBox(width: AppDimensions.space8),
+        ],
 
         // Circular Logout Button
         CircularIconButton(

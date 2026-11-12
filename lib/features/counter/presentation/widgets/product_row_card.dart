@@ -10,12 +10,14 @@ import 'quantity_stepper.dart';
 /// Product row card (cart-item style) strictly following DESIGN.md
 class ProductRowCard extends StatelessWidget {
   final ProductSalesState state;
+  final bool isMasked;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
 
   const ProductRowCard({
     super.key,
     required this.state,
+    this.isMasked = false,
     required this.onIncrement,
     required this.onDecrement,
   });
@@ -77,9 +79,11 @@ class ProductRowCard extends StatelessWidget {
                   style: AppTextStyles.caption,
                 ),
                 const SizedBox(height: AppDimensions.space4),
-                // "Today: ₹X" in danger-free textSecondary
+                // "Today: ₹X" in danger-free textSecondary (masked when privacy active)
                 Text(
-                  'Today: ${CurrencyFormatter.formatInt(state.revenue)}',
+                  isMasked
+                      ? 'Today: ₹ ••••'
+                      : 'Today: ${CurrencyFormatter.formatInt(state.revenue)}',
                   style: AppTextStyles.caption.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -93,6 +97,7 @@ class ProductRowCard extends StatelessWidget {
           // Right: Quantity Stepper
           QuantityStepper(
             count: state.unitsSold,
+            isMasked: isMasked,
             onIncrement: onIncrement,
             onDecrement: onDecrement,
           ),

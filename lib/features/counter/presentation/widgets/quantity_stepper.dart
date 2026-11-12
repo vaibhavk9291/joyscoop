@@ -14,12 +14,14 @@ import '../../../../core/theme/app_text_styles.dart';
 /// Motion: scale to 0.92 over 120 ms with light haptic
 class QuantityStepper extends StatelessWidget {
   final int count;
+  final bool isMasked;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
 
   const QuantityStepper({
     super.key,
     required this.count,
+    this.isMasked = false,
     required this.onIncrement,
     required this.onDecrement,
   });
@@ -60,8 +62,8 @@ class QuantityStepper extends StatelessWidget {
               );
             },
             child: Text(
-              '$count',
-              key: ValueKey<int>(count),
+              isMasked ? '••' : '$count',
+              key: ValueKey<String>(isMasked ? 'masked' : '$count'),
               style: AppTextStyles.stepperNumber,
             ),
           ),

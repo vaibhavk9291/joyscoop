@@ -19,6 +19,11 @@ dependencies:
   share_plus: ^10.1.4
   shared_preferences: ^2.5.3
   connectivity_plus: ^6.1.4
+  flutter_thermal_printer: ^2.0.1
+  esc_pos_utils_plus: ^2.0.4
+  permission_handler: ^11.3.1
+  print_bluetooth_thermal: ^1.2.5
+  image: ^4.5.3
 
 dev_dependencies:
   flutter_test:

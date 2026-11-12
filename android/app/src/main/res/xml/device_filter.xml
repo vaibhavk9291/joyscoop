@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- USB Thermal Receipt Printer Class (7 = Printer) -->
+    <usb-device class="7" />
+    <!-- Filter for any USB attached device if needed -->
+    <usb-device />
+</resources>
+

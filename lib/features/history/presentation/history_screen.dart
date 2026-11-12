@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/privacy/privacy_controller.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimensions.dart';
 import '../../../core/theme/app_shadows.dart';
@@ -45,6 +47,7 @@ class HistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final historyState = ref.watch(historyControllerProvider);
     final historyNotifier = ref.read(historyControllerProvider.notifier);
+    final isMasked = ref.watch(privacyProvider);
 
     final selectedDateStr = historyState.selectedDate != null
         ? AppDateUtils.formatFullDate(historyState.selectedDate!)
@@ -69,10 +72,53 @@ class HistoryScreen extends ConsumerWidget {
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: AppDimensions.space16),
 
-                  // Header with Title "History"
-                  Text(
-                    'History',
-                    style: AppTextStyles.title.copyWith(fontSize: 26),
+                  // Header with Title "History" and Bank-style Privacy "i" / Eye Toggle
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'History',
+                        style: AppTextStyles.title.copyWith(fontSize: 26),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          ref.read(privacyProvider.notifier).togglePrivacy();
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: AppShadows.inputFieldShadow,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isMasked
+                                    ? Icons.visibility_off_rounded
+                                    : Icons.visibility_rounded,
+                                color: AppColors.primary,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                isMasked ? 'Hidden' : 'Visible',
+                                style: AppTextStyles.captionBold.copyWith(
+                                  color: AppColors.primary,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
 
                   const SizedBox(height: AppDimensions.space16),
@@ -153,12 +199,14 @@ class HistoryScreen extends ConsumerWidget {
                         label: 'This Week',
                         amount: historyState.weekTotal,
                         icon: Icons.calendar_view_week_rounded,
+                        isMasked: isMasked,
                       ),
                       const SizedBox(width: AppDimensions.space12),
                       SummaryChip(
                         label: 'This Month',
                         amount: historyState.monthTotal,
                         icon: Icons.insert_chart_outlined_rounded,
+                        isMasked: isMasked,
                       ),
                     ],
                   ),
@@ -209,7 +257,10 @@ class HistoryScreen extends ConsumerWidget {
                     ),
                   ] else ...[
                     for (final dayItem in historyState.filteredDays) ...[
-                      DaySalesCard(dayItem: dayItem),
+                      DaySalesCard(
+                        dayItem: dayItem,
+                        isMasked: isMasked,
+                      ),
                       const SizedBox(height: AppDimensions.space12),
                     ],
                   ],

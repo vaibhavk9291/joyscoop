@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
@@ -6,23 +7,33 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../../core/widgets/secondary_button.dart';
+import '../../../../services/printing/models/bill.dart';
+import '../../../../services/printing/printer_service.dart';
 import '../../domain/history_day_item.dart';
 
 /// Summary bottom sheet strictly per DESIGN.md
-class SummaryBottomSheet extends StatelessWidget {
+class SummaryBottomSheet extends ConsumerWidget {
   final HistoryDayItem dayItem;
+  final bool isMasked;
 
   const SummaryBottomSheet({
     super.key,
     required this.dayItem,
+    this.isMasked = false,
   });
 
-  static Future<void> show(BuildContext context, HistoryDayItem dayItem) {
+  static Future<void> show(
+    BuildContext context,
+    HistoryDayItem dayItem, {
+    bool isMasked = false,
+  }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => SummaryBottomSheet(dayItem: dayItem),
+      builder: (context) =>
+          SummaryBottomSheet(dayItem: dayItem, isMasked: isMasked),
     );
   }
 
@@ -43,15 +54,20 @@ class SummaryBottomSheet extends StatelessWidget {
       '💰 Grand Total: ${CurrencyFormatter.formatInt(dayItem.totalRevenue)}',
     );
 
-    Share.share(buffer.toString(), subject: 'Joyscoop Sales Report - $dateDisplay');
+    Share.share(
+      buffer.toString(),
+      subject: 'Joyscoop Sales Report - $dateDisplay',
+    );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isToday = AppDateUtils.isToday(dayItem.businessDate);
     final dateTitle = isToday
         ? 'Today (${AppDateUtils.formatDisplayDate(dayItem.businessDate)})'
         : AppDateUtils.formatDisplayDate(dayItem.businessDate);
+
+    final printerState = ref.watch(printerServiceProvider);
 
     return Container(
       decoration: const BoxDecoration(
@@ -87,10 +103,7 @@ class SummaryBottomSheet extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Daily Sales Breakdown',
-                  style: AppTextStyles.title,
-                ),
+                Text('Daily Sales Breakdown', style: AppTextStyles.title),
                 Text(
                   dateTitle,
                   style: AppTextStyles.caption.copyWith(
@@ -106,7 +119,9 @@ class SummaryBottomSheet extends StatelessWidget {
             // Rows with label left (textSecondary) and value right (textPrimary, bold)
             if (dayItem.breakdown.isEmpty)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppDimensions.space16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppDimensions.space16,
+                ),
                 child: Center(
                   child: Text(
                     'No individual product sales recorded',
@@ -141,16 +156,20 @@ class SummaryBottomSheet extends StatelessWidget {
                           ),
                           const SizedBox(width: AppDimensions.space8),
                           Text(
-                            '× ${item.units}',
+                            isMasked ? '× ••' : '× ${item.units}',
                             style: AppTextStyles.captionBold,
                           ),
                         ],
                       ),
                       Text(
-                        CurrencyFormatter.formatInt(item.revenue),
+                        isMasked
+                            ? '₹ ••••'
+                            : CurrencyFormatter.formatInt(item.revenue),
                         style: AppTextStyles.body.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: isNegative ? AppColors.danger : AppColors.textPrimary,
+                          color: isNegative
+                              ? AppColors.danger
+                              : AppColors.textPrimary,
                         ),
                       ),
                     ],
@@ -174,13 +193,17 @@ class SummaryBottomSheet extends StatelessWidget {
                       style: AppTextStyles.cardTitle.copyWith(fontSize: 18),
                     ),
                     Text(
-                      '${dayItem.totalUnits} items sold',
+                      isMasked
+                          ? '•••• items sold'
+                          : '${dayItem.totalUnits} items sold',
                       style: AppTextStyles.caption,
                     ),
                   ],
                 ),
                 Text(
-                  CurrencyFormatter.formatInt(dayItem.totalRevenue),
+                  isMasked
+                      ? '₹ ••••••'
+                      : CurrencyFormatter.formatInt(dayItem.totalRevenue),
                   style: AppTextStyles.title.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w800,
@@ -192,11 +215,29 @@ class SummaryBottomSheet extends StatelessWidget {
 
             const SizedBox(height: AppDimensions.space24),
 
-            // Primary Gradient Pill Button underneath: Share report
-            PrimaryButton(
-              text: isToday ? "Share today's report" : "Share report",
-              icon: Icons.share_rounded,
-              onPressed: _shareReport,
+            // Action Buttons: Share report & Print / Reprint Bill
+            Row(
+              children: [
+                Expanded(
+                  child: SecondaryButton(
+                    text: isToday ? "Share" : "Share report",
+                    icon: Icons.share_rounded,
+                    onPressed: _shareReport,
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.space12),
+                Expanded(
+                  child: PrimaryButton(
+                    text: 'Print Bill',
+                    icon: Icons.receipt_rounded,
+                    isLoading: printerState.status == PrinterStatus.printing,
+                    onPressed: () {
+                      final bill = Bill.fromHistoryDayItem(dayItem);
+                      ref.read(printerServiceProvider.notifier).printBill(bill);
+                    },
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -204,4 +245,3 @@ class SummaryBottomSheet extends StatelessWidget {
     );
   }
 }
-

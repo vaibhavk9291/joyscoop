@@ -10,12 +10,14 @@ class SummaryChip extends StatelessWidget {
   final String label;
   final int amount;
   final IconData icon;
+  final bool isMasked;
 
   const SummaryChip({
     super.key,
     required this.label,
     required this.amount,
     required this.icon,
+    this.isMasked = false,
   });
 
   @override
@@ -60,7 +62,7 @@ class SummaryChip extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.space8),
             Text(
-              CurrencyFormatter.formatInt(amount),
+              isMasked ? '₹ ••••••' : CurrencyFormatter.formatInt(amount),
               style: AppTextStyles.title.copyWith(fontSize: 18),
             ),
           ],

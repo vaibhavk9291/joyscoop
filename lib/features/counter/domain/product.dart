@@ -49,7 +49,7 @@ class Product {
 
   /// Default fixed catalog for initial seed / fallback
   static List<Product> defaultProducts() => const [
-    Product(id: 'prod-softy', name: 'Softy', price: 30, sortOrder: 1),
+    Product(id: 'prod-softy', name: 'Softy', price: 25, sortOrder: 1),
     Product(
       id: 'prod-softy-choco-dip',
       name: 'Softy Choco Dip',
