@@ -117,8 +117,8 @@ class Bill {
         BillItem(
           name: 'Softy Soft-Serve Cone',
           quantity: 2,
-          rate: 25.0,
-          amount: 50.0,
+          rate: 30.0,
+          amount: 60.0,
         ),
         BillItem(
           name: 'Softy Choco Dip Cone',
@@ -133,11 +133,11 @@ class Bill {
           amount: 55.0,
         ),
       ],
-      subtotal: 145.0,
+      subtotal: 155.0,
       discount: 0.0,
-      cgst: 3.62,
-      sgst: 3.62,
-      grandTotal: 145.0,
+      cgst: 3.88,
+      sgst: 3.87,
+      grandTotal: 155.0,
     );
   }
 }

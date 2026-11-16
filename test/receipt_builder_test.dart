@@ -17,8 +17,8 @@ void main() {
           BillItem(
             name: 'Softy Waffle Cone',
             quantity: 2,
-            rate: 25.0,
-            amount: 50.0,
+            rate: 30.0,
+            amount: 60.0,
           ),
           BillItem(
             name: 'Softy Choco Dip Cone with Toppings',
@@ -33,11 +33,11 @@ void main() {
             amount: 55.0,
           ),
         ],
-        subtotal: 145.0,
+        subtotal: 155.0,
         discount: 5.0,
-        cgst: 3.50,
-        sgst: 3.50,
-        grandTotal: 147.0,
+        cgst: 3.75,
+        sgst: 3.75,
+        grandTotal: 157.50,
       );
     });
 

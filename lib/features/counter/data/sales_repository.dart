@@ -31,14 +31,14 @@ class SalesRepository {
         return Product.defaultProducts();
       }
 
-      // Ensure Softy price is updated to 25 in memory and synced to Supabase
+      // Ensure Softy price is updated to 30 in memory and synced to Supabase
       final updatedList = productsList.map((p) {
-        if (p.name.toLowerCase() == 'softy' && p.price != 25) {
+        if (p.name.toLowerCase() == 'softy' && p.price != 30) {
           _updateSoftyPriceInDb();
           return Product(
             id: p.id,
             name: p.name,
-            price: 25,
+            price: 30,
             sortOrder: p.sortOrder,
             isActive: p.isActive,
           );
@@ -53,10 +53,10 @@ class SalesRepository {
     }
   }
 
-  /// Attempts to update the Softy price in Supabase DB to 25
+  /// Attempts to update the Softy price in Supabase DB to 30
   Future<void> _updateSoftyPriceInDb() async {
     try {
-      await client?.from('products').update({'price': 25}).eq('name', 'Softy');
+      await client?.from('products').update({'price': 30}).eq('name', 'Softy');
     } catch (e) {
       debugPrint('Could not update Softy price in Supabase: $e');
     }
