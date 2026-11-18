@@ -92,19 +92,28 @@ jobs:
           pod install --repo-update
           cd ..
 
+      - name: Verify Code Signing Assets
+        run: |
+          echo "=== Installed Signing Identities ==="
+          security find-identity -v -p codesigning
+          echo "=== Installed Provisioning Profiles ==="
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ || true
+
       - name: Build IPA
         run: |
           # Use GitHub run_number to guarantee unique strictly-increasing build numbers
           BUILD_NUM=${{ github.run_number }}
           echo "Building iOS IPA with build number: $BUILD_NUM"
-          flutter build ipa --release --build-number=$BUILD_NUM
+          flutter build ipa --release \
+            --build-number=$BUILD_NUM \
+            --export-options-plist=ios/ExportOptions.plist
 
       - name: Upload to App Store Connect / TestFlight
         env:
           KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         run: |
-          xcrun altool --upload-app \
+          xcrun altool --upload-package \
             --type ios \
             -f build/ios/ipa/*.ipa \
             --apiKey "$KEY_ID" \

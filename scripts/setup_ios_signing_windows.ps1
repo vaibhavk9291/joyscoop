@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Automates iOS Distribution Certificate setup on Windows for GitHub Actions.
 .DESCRIPTION
