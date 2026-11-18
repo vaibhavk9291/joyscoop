@@ -1,0 +1,92 @@
+name: Deploy iOS to App Store Connect (TestFlight)
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_notes:
+        description: 'TestFlight What to Test notes'
+        required: false
+        default: 'Production update with thermal printing and updated pricing'
+        type: string
+  push:
+    branches:
+      - main
+    paths:
+      - 'lib/**'
+      - 'ios/**'
+      - 'pubspec.yaml'
+      - '.github/workflows/deploy_ios.yml'
+
+concurrency:
+  group: deploy-ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_and_upload:
+    name: Build & Upload to TestFlight
+    runs-on: macos-14
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Verify Flutter Version
+        run: flutter --version
+
+      - name: Install Apple Distribution Certificate (.p12)
+        uses: apple-actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          p12-password: ${{ secrets.P12_PASSWORD }}
+
+      - name: Download App Store Provisioning Profile
+        uses: apple-actions/download-provisioning-profiles@v3
+        with:
+          bundle-id: 'com.joyscoop.joyscoop'
+          profile-type: 'IOS_APP_STORE'
+          issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          api-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+
+      - name: Install CocoaPods Dependencies
+        run: |
+          flutter pub get
+          cd ios
+          pod install --repo-update
+          cd ..
+
+      - name: Build IPA
+        run: |
+          # Use GitHub run_number to guarantee unique strictly-increasing build numbers
+          BUILD_NUM=${{ github.run_number }}
+          echo "Building iOS IPA with build number: $BUILD_NUM"
+          flutter build ipa --release --build-number=$BUILD_NUM
+
+      - name: Upload to App Store Connect / TestFlight
+        env:
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "$PRIVATE_KEY" > ~/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8
+          xcrun altool --upload-app \
+            --type ios \
+            -f build/ios/ipa/*.ipa \
+            --apiKey "$KEY_ID" \
+            --apiIssuer "$ISSUER_ID"
+
+      - name: Upload IPA as GitHub Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: joyscoop-ios-ipa
+          path: build/ios/ipa/*.ipa
+          retention-days: 14
