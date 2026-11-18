@@ -46,6 +46,35 @@ jobs:
           p12-file-base64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
           p12-password: ${{ secrets.P12_PASSWORD }}
 
+      - name: Format and Sanitize App Store Connect Private Key
+        env:
+          RAW_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        run: |
+          python3 - << 'EOF'
+          import os, textwrap
+          raw = os.environ.get('RAW_KEY', '').strip()
+          if (raw.startswith('"') and raw.endswith('"')) or (raw.startswith("'") and raw.endswith("'")):
+              raw = raw[1:-1].strip()
+          raw = raw.replace('\\n', '\n')
+          lines = [l.strip() for l in raw.split('\n') if l.strip()]
+          body = "".join([l for l in lines if not l.startswith('-----')])
+          wrapped = "\n".join(textwrap.wrap(body, 64))
+          pem = f"-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n"
+
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+              f.write("CLEAN_PRIVATE_KEY<<EOF\n")
+              f.write(pem)
+              f.write("EOF\n")
+
+          key_id = os.environ.get('KEY_ID', '')
+          if key_id:
+              keys_dir = os.path.expanduser('~/.appstoreconnect/private_keys')
+              os.makedirs(keys_dir, exist_ok=True)
+              with open(os.path.join(keys_dir, f'AuthKey_{key_id}.p8'), 'w') as f:
+                  f.write(pem)
+          EOF
+
       - name: Download App Store Provisioning Profile
         uses: apple-actions/download-provisioning-profiles@v7
         with:
@@ -53,7 +82,7 @@ jobs:
           profile-type: 'IOS_APP_STORE'
           issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          api-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          api-private-key: ${{ env.CLEAN_PRIVATE_KEY }}
 
       - name: Install CocoaPods Dependencies
         run: |
@@ -73,10 +102,7 @@ jobs:
         env:
           KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
         run: |
-          mkdir -p ~/.appstoreconnect/private_keys
-          echo "$PRIVATE_KEY" > ~/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8
           xcrun altool --upload-app \
             --type ios \
             -f build/ios/ipa/*.ipa \
