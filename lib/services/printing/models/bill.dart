@@ -75,7 +75,8 @@ class Bill {
 
     final total = state.totalRevenue.toDouble();
     final now = DateTime.now();
-    final number = billNumber ??
+    final number =
+        billNumber ??
         'JS-${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}-${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}';
 
     return Bill(
@@ -96,7 +97,8 @@ class Bill {
         .toList();
 
     final parsedDate = DateTime.tryParse(item.businessDate) ?? DateTime.now();
-    final number = billNumber ?? 'JS-HIST-${item.businessDate.replaceAll('-', '')}';
+    final number =
+        billNumber ?? 'JS-HIST-${item.businessDate.replaceAll('-', '')}';
 
     return Bill(
       billNumber: number,
@@ -141,4 +143,3 @@ class Bill {
     );
   }
 }
-

@@ -28,3 +28,4 @@ WHERE name = 'Softy' OR (name ILIKE '%softy%' AND name NOT ILIKE '%choco%');
 SELECT id, name, price, sort_order, is_active
 FROM public.products
 ORDER BY sort_order ASC;
+

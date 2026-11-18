@@ -72,5 +72,7 @@
 		<string>Allow Joyscoop to connect to Bluetooth thermal receipt printers.</string>
 		<key>NSBluetoothPeripheralUsageDescription</key>
 		<string>Allow Joyscoop to discover and print bills on Bluetooth thermal printers.</string>
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
 	</dict>
 </plist>
