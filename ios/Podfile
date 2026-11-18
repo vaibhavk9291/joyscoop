@@ -1,5 +1,5 @@
 # CocoaPods Podfile for Joyscoop iOS
-platform :ios, '13.0'
+platform :ios, '16.0'
 
 # CocoaPods analytics sends network stats synchronously affecting build latency
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -46,8 +46,8 @@ post_install do |installer|
         '$(inherited)',
         'PERMISSION_BLUETOOTH=1',
       ]
-      # Ensure minimum iOS deployment target is 13.0 across all CocoaPods pods
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      # Ensure minimum iOS deployment target is 16.0 across all CocoaPods pods
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
     end
   end
 end
